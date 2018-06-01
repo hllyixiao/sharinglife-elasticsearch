@@ -1,0 +1,17 @@
+server:
+  port: 8032
+
+
+ds.source:
+  type: es
+  mapperlocation: classpath*:mysql/sqlmap/*Mapper.xml
+  jdbc:
+    driver-class-name: com.mysql.jdbc.Driver
+    jdbcUrl: jdbc:mysql://192.168.32.128:3306/wnc?useUnicode=true&characterEncoding=UTF-8
+    #url: jdbc:mysql://192.168.32.128:3306/wnc?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
+  es:
+    host: localhost
+    port: 9200
+    schema: http
