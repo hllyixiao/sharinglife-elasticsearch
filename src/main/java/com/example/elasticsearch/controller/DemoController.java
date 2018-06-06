@@ -3,7 +3,9 @@ package com.example.elasticsearch.controller;
 import com.example.elasticsearch.dsto.BaseDSTO;
 import com.example.elasticsearch.dsto.Condition;
 import com.example.elasticsearch.pojo.Book;
+import com.example.elasticsearch.pojo.MyType;
 import com.example.elasticsearch.pojo.User;
+import com.example.elasticsearch.utils.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,9 @@ public class DemoController {
     @Autowired
     private BaseDSTO<User> userBaseDSTO;
 
+    @Autowired
+    private BaseDSTO<MyType> myTypeBaseDSTO;
+
     @GetMapping("/dobook")
     public void toDoBook(@RequestParam("type") Integer type){
         switch (type){
@@ -37,21 +42,34 @@ public class DemoController {
                 bookBaseDSTO.list(null);break;
             case 6:
                 get();break;
+            case 7:
+                count();break;
             default:
                 System.out.println("不正确的命令");break;
         }
     }
 
     public void add(){
+        MyType myType = new MyType();
         Book book = new Book();
-        book.setId(5);
-        book.setPages(134);
-        book.setTitle("北京奥运");
-        bookBaseDSTO.add(book);
+        book.setTitle("w shi book99");
+        book.setPages(138777);
+        myType.setAge(26891);
+        myType.setDeleted(true);
+        myType.setIp("192.168.32.127");
+        myType.setName("贺淋亮11");
+        myType.setKeyName("北京奥运会11");
+        myType.setDou(98.0);
+        myType.setBook(book);
+        myType.setCreateDate(new Date());
+        myTypeBaseDSTO.add(myType);
+        System.out.println(myType);
 
-        User user = new User();
-        user.setUsername("name");
-        userBaseDSTO.add(user);
+        Condition condition = new Condition();
+        Condition.Criteria c = condition.createCriteria();
+        condition.setPage(new Page(0,2));
+        c.andEqualTo("age",26891);
+        myTypeBaseDSTO.get(condition);
     }
 
     /**
@@ -99,16 +117,31 @@ public class DemoController {
     public void get(){
         Condition condition = new Condition();
         Condition.Criteria c = condition.createCriteria();
-        List<String> list = new ArrayList();
-        list.add("book1");
-        list.add("book2");
-        list.toArray();
-        c.andIn("title",list);
+        condition.setPage(new Page(1,2));
+        c.andEqualTo("name","贺");
+       // c.andEqualTo("pages",2);
+       // c.andGreaterThan("pages",2);
+//        List<String> list = new ArrayList();
+//        list.add("book1");
+//        list.add("book2");
+//        list.toArray();
+//        c.andIn("title",list);
         //c.andEqualTo("title","book1");
         //c.andLessThanOrEqualTo("pages",115);
         //c.andIsNull("pages");
-        bookBaseDSTO.get(condition);
+        myTypeBaseDSTO.get(condition);
     }
 
+    public void count(){
+        Condition condition = new Condition();
+        Condition.Criteria c = condition.createCriteria();
+        condition.setPage(new Page(1,2));
+        c.andEqualTo("title","book1");
+        // c.andEqualTo("pages",2);
+        c.andGreaterThan("pages",1);
+        //bookBaseDSTO.count(condition);
+        //bookBaseDSTO.max("pages",condition);
+        bookBaseDSTO.min("pages",condition);
+    }
 
 }

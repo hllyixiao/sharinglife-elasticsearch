@@ -3,6 +3,7 @@ package com.example.elasticsearch.config;
 import com.example.elasticsearch.dsto.BaseDSTO;
 import com.example.elasticsearch.dsto.impl.BaseDSTOEsImpl;
 import com.example.elasticsearch.pojo.Book;
+import com.example.elasticsearch.pojo.MyType;
 import com.example.elasticsearch.pojo.User;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
@@ -98,17 +99,23 @@ public class ESConfiguration {
 
     @Primary
     @Bean(name = "defaultBookDSTO")
-    public BaseDSTO<Book> getBooktDSTO(
+    public BaseDSTO<Book> getBookDSTO(
             @Qualifier("primaryESClient") RestHighLevelClient restHighLevelClient){
-        return new BaseDSTOEsImpl(restHighLevelClient,"book","book") {
-        };
+        return new BaseDSTOEsImpl(restHighLevelClient,"book","book");
+
     }
 
     @Primary
     @Bean(name = "defaultUserDSTO")
-    public BaseDSTO<User> getUsertDSTO(
+    public BaseDSTO<User> getUserDSTO(
             @Qualifier("primaryESClient") RestHighLevelClient restHighLevelClient){
-        return new BaseDSTOEsImpl(restHighLevelClient,"user","user") {
-        };
+        return new BaseDSTOEsImpl(restHighLevelClient,"user","user");
+    }
+
+    @Primary
+    @Bean(name = "defaultMyTypeDSTO")
+    public BaseDSTO<MyType> getMyTypeDSTO(
+            @Qualifier("primaryESClient") RestHighLevelClient restHighLevelClient){
+        return new BaseDSTOEsImpl(restHighLevelClient,"myType","test");
     }
 }

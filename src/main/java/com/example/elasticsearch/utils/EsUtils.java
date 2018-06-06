@@ -1,5 +1,6 @@
 package com.example.elasticsearch.utils;
 
+import com.example.elasticsearch.dsto.Condition;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -12,16 +13,19 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -136,5 +140,59 @@ public class EsUtils {
             }
         }
         return map;
+    }
+
+
+    public static SearchSourceBuilder resolveCondition(Condition cond){
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        //设置分页
+        Page page = cond.getPage();
+        if(page != null){
+            sourceBuilder.from(page.getBegin());
+            sourceBuilder.size(page.getLength());
+        }
+        //设置排序
+        if(cond.getOrderByClause() != null){
+
+        }
+        //逐步添加查询方法
+        if(!CollectionUtils.isEmpty(cond.getOredCriteria())){
+            for(Condition.Criteria criteria : cond.getOredCriteria()){
+                BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
+                if(!CollectionUtils.isEmpty(criteria.getCriteria())){
+                    for(Condition.Criterion criterion: criteria.getCriteria()){
+                        a(criterion,boolBuilder);
+                    }
+                    sourceBuilder.query(boolBuilder);
+                }
+            }
+        }
+        return sourceBuilder;
+    }
+
+    public static void a(Condition.Criterion criterion,BoolQueryBuilder boolBuilder){
+        String operation = criterion.getOperation();
+        switch (operation) {
+            case " = ":
+                boolBuilder.must(QueryBuilders.matchQuery(criterion.getField(), criterion.getValue()));
+                break;
+            case " <> ":
+                boolBuilder.mustNot(QueryBuilders.matchQuery(criterion.getField(), criterion.getValue()));
+                break;
+            case " > ":
+                boolBuilder.filter(QueryBuilders.rangeQuery(criterion.getField()).gt(criterion.getValue()));
+                break;
+            case " < ":
+                boolBuilder.filter(QueryBuilders.rangeQuery(criterion.getField()).lt(criterion.getValue()));
+                break;
+            case " >= ":
+                boolBuilder.filter(QueryBuilders.rangeQuery(criterion.getField()).gte(criterion.getValue()));
+                break;
+            case " <= ":
+                boolBuilder.filter(QueryBuilders.rangeQuery(criterion.getField()).lte(criterion.getValue()));
+                break;
+            default:
+                break;
+        }
     }
 }

@@ -1,12 +1,10 @@
 package com.example.elasticsearch.dsto;
 
 import com.example.elasticsearch.utils.Page;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author hell
@@ -20,16 +18,10 @@ public class Condition {
 
     protected List<Criteria> oredCriteria;
 
-    /**
-     * 用于es的搜索
-     */
-    protected SearchSourceBuilder sourceBuilder;
-
     protected Page page;
 
     public Condition() {
-        oredCriteria = new ArrayList<>();
-        sourceBuilder = new SearchSourceBuilder();
+        oredCriteria = new ArrayList<Criteria>();
     }
 
     public String getOrderByClause() {
@@ -60,28 +52,13 @@ public class Condition {
         return page;
     }
 
-    public SearchSourceBuilder getSourceBuilder() {
-        return sourceBuilder;
-    }
-
-    public void setSourceBuilder(SearchSourceBuilder sourceBuilder) {
-        this.sourceBuilder = sourceBuilder;
-    }
-
     public void setPage(Page page) {
-        sourceBuilder.from(page.getBegin());
-        sourceBuilder.size(page.getLength());
         this.page = page;
     }
 
-    /**
-     * 创建查询条件（包括es的查询条件）
-     * @return
-     */
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
-        sourceBuilder.query(criteria.getBoolBuilder());
         return criteria;
     }
 
@@ -92,13 +69,10 @@ public class Condition {
 
     public static class Criteria{
 
-        protected BoolQueryBuilder boolBuilder;
-
         protected List<Criterion> criteria;
 
         protected Criteria() {
-            boolBuilder = QueryBuilders.boolQuery();
-            criteria = new ArrayList<>();
+            criteria = new ArrayList<Criterion>();
         }
 
         public List<Criterion> getCriteria() {
@@ -113,20 +87,11 @@ public class Condition {
             return criteria.size() > 0;
         }
 
-        public BoolQueryBuilder getBoolBuilder() {
-            return boolBuilder;
-        }
-
-        public void setBoolBuilder(BoolQueryBuilder boolBuilder) {
-            this.boolBuilder = boolBuilder;
-        }
-
         public Criteria andEqualTo(String field,Object value) {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " = ",value));
-            boolBuilder.must(QueryBuilders.matchQuery(field, value));
+            criteria.add(new Criterion(field, " = ",value));
             return this;
         }
 
@@ -134,8 +99,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " <> ",value));
-            boolBuilder.mustNot(QueryBuilders.matchQuery(field, value));
+            criteria.add(new Criterion(field, " <> ",value));
             return this;
         }
 
@@ -143,10 +107,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " > ",value));
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field);
-            rangeQueryBuilder.gt(value);
-            boolBuilder.must(rangeQueryBuilder);
+            criteria.add(new Criterion(field, " > ",value));
             return this;
         }
 
@@ -154,10 +115,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " >= ",value));
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field);
-            rangeQueryBuilder.gte(value);
-            boolBuilder.must(rangeQueryBuilder);
+            criteria.add(new Criterion(field , " >= ",value));
             return this;
         }
 
@@ -165,10 +123,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " < ",value));
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field);
-            rangeQueryBuilder.lt(value);
-            boolBuilder.must(rangeQueryBuilder);
+            criteria.add(new Criterion(field, " < ",value));
             return this;
         }
 
@@ -176,10 +131,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " <= ",value));
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field);
-            rangeQueryBuilder.lte(value);
-            boolBuilder.must(rangeQueryBuilder);
+            criteria.add(new Criterion(field, " <= ",value));
             return this;
         }
 
@@ -187,8 +139,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " is null "));
-            boolBuilder.must(QueryBuilders.matchQuery(field, " "));
+            criteria.add(new Criterion(field, " is null "));
             return this;
         }
 
@@ -196,7 +147,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " is not null "));
+            criteria.add(new Criterion(field," is not null "));
             return this;
         }
 
@@ -204,11 +155,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " in ",values));
-            String[] str = new String[2];
-            str[0] = "book1";
-            str[1] = "book2";
-            boolBuilder.must(QueryBuilders.termsQuery(field,values));
+            criteria.add(new Criterion(field, " in ",values));
             return this;
         }
 
@@ -216,12 +163,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " not in ",values,"andNotIn"));
-
-            String[] str = new String[3];
-            str[0] = "book1";
-            str[0] = "book2";
-            boolBuilder.mustNot(QueryBuilders.termsQuery(field, ""));
+            criteria.add(new Criterion(field, " not in ",values));
             return this;
         }
 
@@ -229,7 +171,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " between " ,firstValue,secondValue));
+            criteria.add(new Criterion(field, " between " ,firstValue,secondValue));
             return this;
         }
 
@@ -237,7 +179,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " not between " ,firstValue,secondValue));
+            criteria.add(new Criterion(field, " not between " ,firstValue,secondValue));
             return this;
         }
 
@@ -245,7 +187,7 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " like " ,value));
+            criteria.add(new Criterion(field, " like " ,value));
             return this;
         }
 
@@ -253,15 +195,22 @@ public class Condition {
             if (field == null) {
                 throw new RuntimeException("Value for field cannot be null");
             }
-            criteria.add(new Criterion(field + " not like " ,value));
+            criteria.add(new Criterion(field, " not like " ,value));
             return this;
         }
     }
 
     public static class Criterion {
-        private String methonName;
         /**
-         * 查询的数据库字段
+         * 操作字段
+         */
+        private String field;
+        /**
+         * 操作符号
+         */
+        private String operation;
+        /**
+         * 查询的数据库操作和字段连接号
          */
         private String condition;
         /**
@@ -283,13 +232,17 @@ public class Condition {
         private boolean betweenValue;
         private boolean listValue;
 
-        protected Criterion(String condition) {
-            this.condition = condition;
+        protected Criterion(String operation,String field) {
+            this.field = field;
+            this.operation = operation;
+            this.condition = field + operation;
             this.noValue = true;
         }
 
-        protected Criterion(String condition,Object value) {
-            this.condition = condition;
+        protected Criterion(String field,String operation,Object value) {
+            this.field = field;
+            this.operation = operation;
+            this.condition = field + operation;
             this.value = value;
             if(value instanceof Collection<?>){
                 this.listValue = true;
@@ -298,8 +251,10 @@ public class Condition {
             }
         }
 
-        protected Criterion(String condition,Object firstValue, Object secondValue) {
-            this.condition = condition;
+        protected Criterion(String field,String operation,Object firstValue, Object secondValue) {
+            this.field = field;
+            this.operation = operation;
+            this.condition = field + operation;
             this.value = firstValue;
             this.secondValue = secondValue;
             this.betweenValue = true;
@@ -359,6 +314,22 @@ public class Condition {
 
         public void setCondition(String condition) {
             this.condition = condition;
+        }
+
+        public String getOperation() {
+            return operation;
+        }
+
+        public void setOperation(String operation) {
+            this.operation = operation;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public void setField(String field) {
+            this.field = field;
         }
     }
 }

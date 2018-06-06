@@ -2,24 +2,32 @@ package com.example.elasticsearch.dsto.impl;
 
 import com.example.elasticsearch.dsto.BaseDSTO;
 import com.example.elasticsearch.dsto.Condition;
-import com.example.elasticsearch.pojo.Book;
 import com.example.elasticsearch.utils.EsUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.core.jackson.ListOfMapEntrySerializer;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
+import org.elasticsearch.search.aggregations.metrics.max.MaxAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.min.MinAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCountAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.util.CollectionUtils;
@@ -50,7 +58,8 @@ public class BaseDSTOEsImpl<T> implements BaseDSTO<T> {
         try {
             String source = new ObjectMapper().writeValueAsString(t);
             indexRequest.source(source, XContentType.JSON);
-            restHighLevelClient.index(indexRequest);
+            IndexResponse a = restHighLevelClient.index(indexRequest);
+            System.out.println(a);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -127,14 +136,18 @@ public class BaseDSTOEsImpl<T> implements BaseDSTO<T> {
 
         SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.types(typeName);
-        searchRequest.source(cond.getSourceBuilder());
-        SearchResponse response = null;
+        SearchSourceBuilder searchSourceBuilder = EsUtils.resolveCondition(cond);
+        searchRequest.source(searchSourceBuilder);
         try {
-            System.out.println(cond.getSourceBuilder());
-            response = restHighLevelClient.search(searchRequest);
+            System.out.println(searchRequest);
+            SearchResponse response = restHighLevelClient.search(searchRequest);
 
             SearchHits hits = response.getHits();
-
+            SearchHit[] a = hits.getHits();
+            for(SearchHit s:a){
+                SearchHitField name = s.getField("name");
+                System.out.println(name);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -184,7 +197,6 @@ public class BaseDSTOEsImpl<T> implements BaseDSTO<T> {
         //boolBuilder.mustNot(matchQueryBuilder);
         boolBuilder.must(matchQueryBuilder);
 
-
         sourceBuilder.query(boolBuilder);
 
         SearchRequest searchRequest = new SearchRequest(indexName);
@@ -212,17 +224,75 @@ public class BaseDSTOEsImpl<T> implements BaseDSTO<T> {
 
     @Override
     public Long count(Condition cond) {
-        return null;
+        Long count = null;
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        searchRequest.types(typeName);
+        ValueCountAggregationBuilder aggregation =
+                AggregationBuilders
+                        .count("agg")
+                        .field("_id");
+        SearchSourceBuilder searchSourceBuilder = EsUtils.resolveCondition(cond);
+        searchSourceBuilder.aggregation(aggregation);
+        searchRequest.source(searchSourceBuilder);
+
+        try {
+            SearchResponse sr = restHighLevelClient.search(searchRequest);
+            System.out.println(searchSourceBuilder);
+            ValueCount agg = sr.getAggregations().get("agg");
+            count = agg.getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(count);
+        return count;
     }
 
     @Override
     public Object max(String key, Condition cond) {
-        return null;
+        Object max = null;
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        searchRequest.types(typeName);
+        MaxAggregationBuilder aggregation =
+                AggregationBuilders
+                        .max("agg")
+                        .field(key);
+        SearchSourceBuilder searchSourceBuilder = EsUtils.resolveCondition(cond);
+        searchSourceBuilder.aggregation(aggregation);
+        searchRequest.source(searchSourceBuilder);
+
+        try {
+            SearchResponse sr = restHighLevelClient.search(searchRequest);
+            Max agg = sr.getAggregations().get("agg");
+            max = agg.getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(max);
+        return max;
     }
 
     @Override
     public Object min(String key, Condition cond) {
-        return null;
+        Object min = null;
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        searchRequest.types(typeName);
+        MinAggregationBuilder aggregation =
+                AggregationBuilders
+                        .min("agg")
+                        .field(key);
+        SearchSourceBuilder searchSourceBuilder = EsUtils.resolveCondition(cond);
+        searchSourceBuilder.aggregation(aggregation);
+        searchRequest.source(searchSourceBuilder);
+
+        try {
+            SearchResponse sr = restHighLevelClient.search(searchRequest);
+            Min agg = sr.getAggregations().get("agg");
+            min = agg.getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(min);
+        return min;
     }
 
     @Override
