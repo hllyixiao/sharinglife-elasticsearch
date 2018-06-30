@@ -4,7 +4,7 @@
  *
  */
 
-package com.example.elasticsearch.utils;
+package com.fxsh.elasticsearch.utils;
 
 /**
  * 分页使用. <br>

@@ -1,11 +1,10 @@
-package com.example.elasticsearch.controller;
+package com.fxsh.elasticsearch.controller;
 
-import com.example.elasticsearch.dsto.BaseDSTO;
-import com.example.elasticsearch.dsto.Condition;
-import com.example.elasticsearch.pojo.Book;
-import com.example.elasticsearch.pojo.MyType;
-import com.example.elasticsearch.pojo.User;
-import com.example.elasticsearch.utils.Page;
+import com.fxsh.elasticsearch.dsto.BaseEsDSTO;
+import com.fxsh.elasticsearch.pojo.Book;
+import com.fxsh.elasticsearch.pojo.MyType;
+import com.fxsh.elasticsearch.pojo.User;
+import com.fxsh.elasticsearch.utils.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,13 +18,13 @@ import java.util.*;
 public class DemoController {
 
     @Autowired
-    private BaseDSTO<Book> bookBaseDSTO;
+    private BaseEsDSTO<Book> bookBaseDSTO;
 
     @Autowired
-    private BaseDSTO<User> userBaseDSTO;
+    private BaseEsDSTO<User> userBaseDSTO;
 
-    @Autowired
-    private BaseDSTO<MyType> myTypeBaseDSTO;
+    @Autowired(required = false)
+    private BaseEsDSTO<MyType> myTypeBaseDSTO;
 
     @GetMapping("/dobook")
     public void toDoBook(@RequestParam("type") Integer type){

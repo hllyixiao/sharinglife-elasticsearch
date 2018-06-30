@@ -1,4 +1,4 @@
-package com.example.elasticsearch;
+package com.fxsh.elasticsearch;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

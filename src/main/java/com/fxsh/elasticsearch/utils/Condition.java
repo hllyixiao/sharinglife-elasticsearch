@@ -1,6 +1,4 @@
-package com.example.elasticsearch.dsto;
-
-import com.example.elasticsearch.utils.Page;
+package com.fxsh.elasticsearch.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;

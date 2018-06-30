@@ -1,6 +1,5 @@
-package com.example.elasticsearch.mapper;
+package com.fxsh.elasticsearch.mapper;
 
-import com.example.elasticsearch.dsto.Condition;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.example.elasticsearch.mapper;
+package com.fxsh.elasticsearch.mapper;
 
 /**
  * @author hell

@@ -1,4 +1,4 @@
-package com.example.elasticsearch.pojo;
+package com.fxsh.elasticsearch.pojo;
 
 import java.io.Serializable;
 import java.util.Date;
