@@ -1,11 +1,13 @@
-package com.fxsh.elasticsearch.dsto;
+package com.fxsh.es.dsto;
 
-import com.fxsh.elasticsearch.utils.Condition;
+
+import com.fxsh.es.utils.Condition;
 
 import java.util.Date;
 import java.util.List;
 
 /**
+ * ES操作的基本接口
  * @author hell
  * @date 2018/4/12
  */
@@ -31,14 +33,14 @@ public interface BaseEsDSTO<T> {
      * @param data
      * @return
      */
-    int deleteByPrimaryKey(String keyName,Object data);
+    int deleteByPrimaryKey(String keyName, Object data);
 
     /**
      * 更新数据
      * @param t
      * @return
      */
-    int update(T t,String keyName,Object data);
+    int update(T t, String keyName, Object data);
 
     /**
      * 通过查询条件Condition获取单条数据
@@ -61,7 +63,7 @@ public interface BaseEsDSTO<T> {
      * @param attributes
      * @return
      */
-    List<T> topN(int n,String type, String... attributes);
+    List<T> topN(int n, String type, String... attributes);
 
     /**
      * top5

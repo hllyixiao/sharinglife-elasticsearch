@@ -1,4 +1,4 @@
-package com.fxsh.elasticsearch.utils;
+package com.fxsh.es.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;

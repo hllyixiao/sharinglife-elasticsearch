@@ -1,11 +1,11 @@
-package com.fxsh.elasticsearch.dsto.impl;
+package com.fxsh.es.dsto.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fxsh.elasticsearch.dsto.BaseEsDSTO;
-import com.fxsh.elasticsearch.utils.Condition;
-import com.fxsh.elasticsearch.utils.EsUtils;
-import com.fxsh.elasticsearch.utils.Page;
+import com.fxsh.es.dsto.BaseEsDSTO;
+import com.fxsh.es.utils.Condition;
+import com.fxsh.es.utils.EsUtils;
+import com.fxsh.es.utils.Page;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -30,10 +30,13 @@ import java.util.*;
  */
 public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
 
-    private Class<T> entityClass;
-    private RestHighLevelClient rhlClient;
-    private String typeName;
-    private String indexName;
+    public Class beanClass;
+    public RestHighLevelClient rhlClient;
+    public String indexName;
+    public String typeName;
+
+    public BaseEsDSTOImpl() {
+    }
 
     @Override
     public int add(T t) {
@@ -42,8 +45,6 @@ public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
             String source = new ObjectMapper().writeValueAsString(t);
             indexRequest.source(source, XContentType.JSON);
             rhlClient.index(indexRequest);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,7 +77,7 @@ public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
     @Override
     public int deleteByPrimaryKey(String keyName, Object data) {
         int i = 0;
-        if(data != null && Objects.equals(keyName,"")){
+        if(data != null && !Objects.equals(keyName,"")){
             Map<String,Object> keysMap = new HashMap<>(1);
             keysMap.put(keyName,data);
             String _id = EsUtils.getEsIdByObjectId(indexName,typeName,keysMap,rhlClient);
@@ -112,7 +113,7 @@ public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
     @Override
     public T get(Condition cond) {
         //设置返回一条数据
-        cond.setPage(new Page(0,1));
+        //cond.setPage(new Page(0,1));
 
         SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.types(typeName);
@@ -124,7 +125,7 @@ public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
             hits = rhlClient.search(searchRequest).getHits();
             if(hits != null && hits.totalHits > 0){
                 Map<String, Object> map = hits.getAt(0).getSource();
-                return EsUtils.mapToObject(map, entityClass);
+                return EsUtils.mapToObject(map, beanClass);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,5 +192,46 @@ public class BaseEsDSTOImpl<T> implements BaseEsDSTO<T> {
     @Override
     public Date minTime(String dateKey, Condition cond) {
         return EsUtils.maxOrMinDate(indexName,typeName,dateKey,false,rhlClient,cond);
+    }
+
+//    public T getT() {
+//        return t;
+//    }
+//
+//    public void setT(Object t) {
+//        this.t = (T) t;
+//    }
+
+
+    public Class getBeanClass() {
+        return beanClass;
+    }
+
+    public void setBeanClass(Class beanClass) {
+        this.beanClass = beanClass;
+    }
+
+    public RestHighLevelClient getRhlClient() {
+        return rhlClient;
+    }
+
+    public void setRhlClient(RestHighLevelClient rhlClient) {
+        this.rhlClient = rhlClient;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 }
