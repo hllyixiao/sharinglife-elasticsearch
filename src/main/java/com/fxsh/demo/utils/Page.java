@@ -4,7 +4,7 @@
  *
  */
 
-package com.fxsh.es.utils;
+package com.fxsh.demo.utils;
 
 /**
  * 分页使用. <br>

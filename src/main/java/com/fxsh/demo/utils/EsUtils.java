@@ -1,4 +1,4 @@
-package com.fxsh.es.utils;
+package com.fxsh.demo.utils;
 
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

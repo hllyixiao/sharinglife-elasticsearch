@@ -1,4 +1,4 @@
-package com.fxsh.es.utils;
+package com.fxsh.demo.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
